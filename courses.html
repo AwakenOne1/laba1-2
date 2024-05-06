@@ -1,0 +1,561 @@
+﻿<!DOCTYPE html>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<html>
+  <head>
+    <title>Список курсов</title>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.9/dist/flatpickr.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.9/dist/flatpickr.min.css"
+    />
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/indexeddb/3.0.14/indexeddb.min.js"></script> -->
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+    <style>
+      .modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 8px;
+        text-align: left;
+      }
+
+      th {
+        background-color: #f2f2f2;
+      }
+
+      tr:nth-child(even) {
+        background-color: #dddddd;
+      }
+
+      form {
+        max-width: 400px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+      }
+
+      input[type="text"],
+      textarea,
+      input[type="date"] {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+        margin-bottom: 16px;
+      }
+
+      input[type="submit"] {
+        background-color: #4caf50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      input[type="submit"]:hover {
+        background-color: #45a049;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <section class="top-nav">
+        <a href="index.html"
+          ><img class="logo" src="media/logo2.png" alt="Логотип" class="logo"
+        /></a>
+        <div>Образовательная платформа</div>
+        <input id="menu-toggle" type="checkbox" />
+        <label class="menu-button-container" for="menu-toggle">
+          <div class="menu-button"></div>
+        </label>
+        <ul class="menu">
+          <li><a href="index.html">Главная</a></li>
+          <li><a href="courses.html">Курсы</a></li>
+        </ul>
+      </section>
+    </header>
+    <main>
+      <section>
+        <h2>Список курсов</h2>
+        <table id="courses-table">
+          <tr>
+            <th>Название</th>
+            <th>Цена</th>
+            <th>Длительность</th>
+            <th>Описание</th>
+            <th>Дата создания</th>
+            <th>Действия</th>
+          </tr>
+        </table>
+      </section>
+      <section>
+        <h2>Поиск курсов</h2>
+        <input
+          type="text"
+          id="search-input"
+          placeholder="Введите название курса"
+        />
+        <button id="search-button">Поиск</button>
+      </section>
+      <section>
+        <h2>Сортировка курсов</h2>
+        <div>
+          <input type="text" id="start-date" placeholder="Начальная дата" />
+          <input type="text" id="end-date" placeholder="Конечная дата" />
+        </div>
+        <button id="sort-created" onclick="sortCoursesByCreated()">
+          По времени создания
+        </button>
+        <button style="display: none" id="sort-updated">По времени обновления</button>
+        <button id="sort-title">По названию</button>
+      </section>
+      <section>
+        <h2>Добавить новый курс</h2>
+        <button id="open-button">Добавить</button>
+      </section>
+    </main>
+    <footer>
+      <p>© 2024 Образовательная платформа. Все права защищены.</p>
+    </footer>
+    <div id="openModal" class="modal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">Добавить новый курс</h3>
+            <div onclick="closeAddModal()" title="Close" class="close">×</div>
+          </div>
+          <div class="modal-body">
+            <form id="add-course-form">
+              <label for="course_title">Название:</label>
+              <input
+                type="text"
+                name="course_title"
+                id="course_title"
+                required
+              />
+              <br />
+              <label for="course_price">Цена:</label>
+              <input
+                type="text"
+                name="course_price"
+                id="course_price"
+                required
+              />
+              <br />
+              <label for="course_duration">Длительность:</label>
+              <input
+                type="text"
+                name="course_duration"
+                id="course_duration"
+                required
+              />
+              <br />
+              <label for="course_description">Описание:</label>
+              <textarea
+                name="course_description"
+                id="course_description"
+                required
+              ></textarea>
+              <br />
+              <label for="course_date">Дата создания:</label>
+              <input type="date" name="course_date" id="course_date" required />
+              <br />
+              <input type="submit" value="Добавить" />
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="edit-course-modal" class="modal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">Редактировать курс</h3>
+            <div onclick="closeEditModal()" title="Close" class="close">×</div>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="edit-course-id" value="" />
+            <form id="edit-course-form">
+              <label for="edit-course-title">Название:</label>
+              <input
+                type="text"
+                name="edit-course-title"
+                id="edit-course-title"
+                required
+              />
+              <br />
+              <label for="edit-course-price">Цена:</label>
+              <input
+                type="text"
+                name="edit-course-price"
+                id="edit-course-price"
+                required
+              />
+              <br />
+              <label for="edit-course-duration">Длительность:</label>
+              <input
+                type="text"
+                name="edit-course-duration"
+                id="edit-course-duration"
+                required
+              />
+              <br />
+              <label for="edit-course-description">Описание:</label>
+              <textarea
+                name="edit-course-description"
+                id="edit-course-description"
+                required
+              ></textarea>
+              <br />
+              <label for="edit-course-date">Дата создания:</label>
+              <input
+                type="date"
+                name="edit-course-date"
+                id="edit-course-date"
+                required
+              />
+              <br />
+              <input type="submit" value="Сохранить изменения" />
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Функция для загрузки данных из localStorage и отображения их в таблице
+      function loadCoursesFromLocalStorage() {
+        const coursesTable = document.getElementById('courses-table');
+        const courses = JSON.parse(localStorage.getItem('courses')) || [];
+    
+        courses.forEach((course) => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td> <a href="course.html">${course.title}</a> </td>
+            <td>${course.price}</td>
+            <td>${course.duration}</td>
+            <td>${course.description}</td>
+            <td>${course.date}</td>
+            <td>
+              <button onclick="editCourse(${course.id})">Редактировать</button>
+              <button onclick="deleteCourse(${course.id})">Удалить</button>
+            </td>
+          `;
+          coursesTable.appendChild(row);
+        });
+      }
+    
+      // Функция для добавления нового курса в localStorage
+      function addCourse(event) {
+        event.preventDefault();
+    
+        const title = document.getElementById('course_title').value;
+        const price = document.getElementById('course_price').value;
+        const duration = document.getElementById('course_duration').value;
+        const description = document.getElementById('course_description').value;
+        const date = document.getElementById('course_date').value;
+    
+        const courses = JSON.parse(localStorage.getItem('courses')) || [];
+        const newCourse = {
+          id: Date.now(),
+          title,
+          price,
+          duration,
+          description,
+          date,
+        };
+    
+        courses.push(newCourse);
+        localStorage.setItem('courses', JSON.stringify(courses));
+    
+        closeAddModal();
+        location.reload();
+      }
+    
+      // Функция для редактирования курса
+      function editCourse(courseId) {
+        const courses = JSON.parse(localStorage.getItem('courses')) || [];
+        const course = courses.find((c) => c.id === courseId);
+    
+        if (course) {
+          document.getElementById('edit-course-id').value = course.id;
+          document.getElementById('edit-course-title').value = course.title;
+          document.getElementById('edit-course-price').value = course.price;
+          document.getElementById('edit-course-duration').value = course.duration;
+          document.getElementById('edit-course-description').value = course.description;
+          document.getElementById('edit-course-date').value = course.date;
+    
+          openEditModal();
+        }
+      }
+    
+      // Функция для сохранения изменений курса
+      function saveEditedCourse(event) {
+        event.preventDefault();
+    
+        const courseId = parseInt(document.getElementById('edit-course-id').value);
+        const title = document.getElementById('edit-course-title').value;
+        const price = document.getElementById('edit-course-price').value;
+        const duration = document.getElementById('edit-course-duration').value;
+        const description = document.getElementById('edit-course-description').value;
+        const date = document.getElementById('edit-course-date').value;
+    
+        const courses = JSON.parse(localStorage.getItem('courses')) || [];
+        const courseIndex = courses.findIndex((c) => c.id === courseId);
+    
+        if (courseIndex !== -1) {
+          courses[courseIndex] = {
+            id: courseId,
+            title,
+            price,
+            duration,
+            description,
+            date,
+          };
+    
+          localStorage.setItem('courses', JSON.stringify(courses));
+          closeEditModal();
+          location.reload();
+        }
+      }
+    
+      // Функция для удаления курса
+      function deleteCourse(courseId) {
+        const confirmation = confirm('Вы уверены, что хотите удалить этот курс?');
+    
+        if (confirmation) {
+          const courses = JSON.parse(localStorage.getItem('courses')) || [];
+          const updatedCourses = courses.filter((c) => c.id !== courseId);
+          localStorage.setItem('courses', JSON.stringify(updatedCourses));
+      location.reload();
+    }
+  }
+
+  // Функция для поиска курсов
+  function searchCourses() {
+    const searchInput = document.getElementById('search-input').value.toLowerCase();
+    const coursesTable = document.getElementById('courses-table');
+    const rows = coursesTable.getElementsByTagName('tr');
+
+    for (let i = 1; i < rows.length; i++) {
+      const title = rows[i].getElementsByTagName('td')[0].textContent.toLowerCase();
+
+      if (title.includes(searchInput)) {
+        rows[i].style.display = '';
+      } else {
+        rows[i].style.display = 'none';
+      }
+    }
+  }
+
+  // Функция для сортировки курсов по времени создания
+  function sortCoursesByCreated() {
+    const courses = JSON.parse(localStorage.getItem('courses')) || [];
+    courses.sort((a, b) => new Date(a.date) - new Date(b.date));
+    localStorage.setItem('courses', JSON.stringify(courses));
+    location.reload();
+  }
+
+  // Функция для сортировки курсов по названию
+// Функция для сортировки курсов по названию и фильтрации по диапазону дат
+function sortCoursesByTitle() {
+  const startDate = document.getElementById('start-date').value;
+  const endDate = document.getElementById('end-date').value;
+
+  const courses = JSON.parse(localStorage.getItem('courses')) || [];
+  const filteredCourses = courses.filter((course) => {
+    const courseDate = new Date(course.date);
+    const startDateTime = new Date(startDate);
+    const endDateTime = new Date(endDate);
+
+    return courseDate >= startDateTime && courseDate <= endDateTime;
+  });
+
+  const sortedCourses = filteredCourses.sort((a, b) => a.title.localeCompare(b.title));
+
+  // Очистка таблицы
+  const coursesTable = document.getElementById('courses-table');
+  while (coursesTable.rows.length > 1) {
+    coursesTable.deleteRow(1);
+  }
+
+  // Заполнение таблицы отсортированными и отфильтрованными курсами
+  sortedCourses.forEach((course) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td><a href="course.html">${course.title}</a></td>
+      <td>${course.price}</td>
+      <td>${course.duration}</td>
+      <td>${course.description}</td>
+      <td>${course.date}</td>
+      <td>
+        <button onclick="editCourse(${course.id})">Редактировать</button>
+        <button onclick="deleteCourse(${course.id})">Удалить</button>
+      </td>
+    `;
+    coursesTable.appendChild(row);
+  });
+}
+
+// Обработчик клика на кнопку сортировки по названию
+document.getElementById('sort-title').addEventListener('click', sortCoursesByTitle);
+
+  // Функция для сортировки курсов по временному промежутку
+  // function sortCoursesByDateRange() {
+  //   const startDate = document.getElementById('start-date').value;
+  //   const endDate = document.getElementById('end-date').value;
+
+  //   const courses = JSON.parse(localStorage.getItem('courses')) || [];
+  //   const filteredCourses = courses.filter((course) => {
+  //     return course.date >= startDate && course.date <= endDate;
+  //   });
+
+  //   localStorage.setItem('courses', JSON.stringify(filteredCourses));
+  //   location.reload();
+  // }
+  function sortCoursesByDateRange() {
+  const startDate = document.getElementById('start-date').value;
+  const endDate = document.getElementById('end-date').value;
+
+  const courses = JSON.parse(localStorage.getItem('courses')) || [];
+  const filteredCourses = courses.filter((course) => {
+    const courseDate = new Date(course.date);
+    const startDateTime = new Date(startDate);
+    const endDateTime = new Date(endDate);
+
+    return courseDate >= startDateTime && courseDate <= endDateTime;
+  });
+
+  // Очистка таблицы
+  const coursesTable = document.getElementById('courses-table');
+  while (coursesTable.rows.length > 1) {
+    coursesTable.deleteRow(1);
+  }
+
+  // Заполнение таблицы отфильтрованными курсами
+  filteredCourses.forEach((course) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td><a href="course.html">${course.title}</a></td>
+      <td>${course.price}</td>
+      <td>${course.duration}</td>
+      <td>${course.description}</td>
+      <td>${course.date}</td>
+      <td>
+        <button onclick="editCourse(${course.id})">Редактировать</button>
+        <button onclick="deleteCourse(${course.id})">Удалить</button>
+      </td>
+    `;
+    coursesTable.appendChild(row);
+  });
+}
+
+  // Обработчик отправки формы добавления курса
+  document.getElementById('add-course-form').addEventListener('submit', addCourse);
+
+  // Обработчик отправки формы редактирования курса
+  document.getElementById('edit-course-form').addEventListener('submit', saveEditedCourse);
+
+  // Обработчик клика на кнопку поиска
+  document.getElementById('search-button').addEventListener('click', searchCourses);
+
+  // Обработчик клика на кнопку сортировки по времени создания
+  document.getElementById('sort-created').addEventListener('click', sortCoursesByCreated);
+
+  // Обработчик клика на кнопку сортировки по названию
+  document.getElementById('sort-title').addEventListener('click', sortCoursesByTitle);
+
+  // Обработчик клика на кнопку сортировки по временному промежутку
+  document.getElementById('sort-updated').addEventListener('click', sortCoursesByDateRange);
+
+  // Инициализация Date Picker и Time Picker
+  flatpickr("#start-date", {
+    enableTime: true,
+    dateFormat: "Y-m-d H:i",
+  });
+
+  flatpickr("#end-date", {
+    enableTime: true,
+    dateFormat: "Y-m-d H:i",
+  });
+
+  // Загрузка данных из localStorage при загрузке страницы
+  window.onload = loadCoursesFromLocalStorage;
+  function openAddModal() {
+      document.getElementById('openModal').style.display = 'block';
+    }
+  
+    // Функция для закрытия модального окна добавления курса
+    function closeAddModal() {
+      document.getElementById('openModal').style.display = 'none';
+      document.getElementById('add-course-form').reset();
+    }
+  
+    // Функция для открытия модального окна редактирования курса
+    function openEditModal() {
+      document.getElementById('edit-course-modal').style.display = 'block';
+    }
+  
+    // Функция для закрытия модального окна редактирования курса
+    function closeEditModal() {
+      document.getElementById('edit-course-modal').style.display = 'none';
+      document.getElementById('edit-course-form').reset();
+    }
+  
+    // ...
+  
+    // Обработчик клика на кнопку открытия модального окна добавления курса
+    document.getElementById('open-button').addEventListener('click', openAddModal);
+  
+    // Обработчик клика на кнопку закрытия модального окна добавления курса
+    document.querySelector('#openModal .close').addEventListener('click', closeAddModal);
+  
+    // Обработчик клика на кнопку закрытия модального окна редактирования курса
+    document.querySelector('#edit-course-modal .close').addEventListener('click', closeEditModal);
+</script>
+  </body>
+</html>
+
+

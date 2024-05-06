@@ -1,0 +1,237 @@
+﻿<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Образовательная платформа</title>
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+    <style>
+      .news-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        grid-gap: 20px;
+        list-style: none;
+        padding: 0;
+      }
+
+      .news-item {
+        border: 1px solid #ccc;
+        padding: 10px;
+      }
+
+      .news-item h4 {
+        margin-top: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <section class="top-nav">
+        <a href="index.html"
+          ><img class="logo" src="media/logo2.png" alt="Логотип"
+        /></a>
+        <div><a style="color:white" href="index.html">Образовательная платформа</a></div>
+        <input id="menu-toggle" type="checkbox" />
+        <label class="menu-button-container" for="menu-toggle">
+          <div class="menu-button"></div>
+        </label>
+        <ul class="menu">
+          <li><a href="index.html">Главная</a></li>
+          <li><a href="courses.html">Курсы</a></li>
+        </ul>
+      </section>
+    </header>
+
+    <main>
+      <section>
+        <h2>Добро пожаловать на нашу платформу!</h2>
+        <p>Здесь вы найдете множество курсов по различным темам.</p>
+      </section>
+
+      <section>
+        <h3>Новости</h3>
+        <form id="news-form">
+          <label for="title">Заголовок:</label>
+          <input type="text" id="title" required />
+          <br />
+          <label for="description">Описание:</label>
+          <input type="text" id="description" required />
+          <br />
+          <label for="date">Дата публикации:</label>
+          <input type="date" id="date" required />
+          <br />
+          <button type="submit">Добавить новость</button>
+        </form>
+        <br />
+        <label for="search">Поиск:</label>
+        <input type="text" id="search" />
+        <br />
+        <button id="sort-button">Сортировать по дате</button>
+        <ul class="news-list"></ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>&copy; 2024 Образовательная платформа. Все права защищены.</p>
+    </footer>
+    <script>
+      // Функция для сохранения новости в Local Storage
+      function saveNews(title, description, date) {
+        var newsList = JSON.parse(localStorage.getItem("newsList")) || [];
+
+        var news = {
+          title: title,
+          description: description,
+          date: date,
+        };
+
+        newsList.push(news);
+
+        localStorage.setItem("newsList", JSON.stringify(newsList));
+      }
+
+      // Функция для отображения списка новостей на странице
+      function displayNews() {
+        var newsList = JSON.parse(localStorage.getItem("newsList")) || [];
+        var newsContainer = document.querySelector(".news-list");
+
+        newsContainer.innerHTML = "";
+
+        newsList.forEach(function (news, index) {
+          var newsItem = document.createElement("li");
+          newsItem.className = "news-item";
+
+          var title = document.createElement("h4");
+          title.textContent = news.title;
+
+          var description = document.createElement("p");
+          description.textContent = news.description;
+
+          var date = document.createElement("p");
+          date.textContent = "Дата публикации: " + news.date;
+
+          var deleteButton = document.createElement("button");
+          deleteButton.textContent = "Удалить";
+          deleteButton.addEventListener("click", function () {
+            deleteNews(index);
+          });
+
+          var updateButton = document.createElement("button");
+          updateButton.textContent = "Обновить";
+          updateButton.addEventListener("click", function () {
+            updateNews(index);
+          });
+
+          newsItem.appendChild(title);
+          newsItem.appendChild(description);
+          newsItem.appendChild(date);
+          newsItem.appendChild(deleteButton);
+          newsItem.appendChild(updateButton);
+
+          newsContainer.appendChild(newsItem);
+        });
+      }
+
+      // Функция для удаления новости из Local Storage
+      function deleteNews(index) {
+        var newsList = JSON.parse(localStorage.getItem("newsList")) || [];
+        newsList.splice(index, 1);
+        localStorage.setItem("newsList", JSON.stringify(newsList));
+        displayNews();
+      }
+
+      // Функция для обновления новости в Local Storage
+      function updateNews(index) {
+        var newsList = JSON.parse(localStorage.getItem("newsList")) || [];
+        var news = newsList[index];
+        var updatedTitle = prompt("Введите новый заголовок:", news.title);
+        var updatedDescription = prompt(
+          "Введите новое описание:",
+          news.description
+        );
+        var updatedDate = prompt("Введите новую дату публикации:", news.date);
+
+        if (updatedTitle && updatedDescription && updatedDate) {
+          news.title = updatedTitle;
+          news.description = updatedDescription;
+          news.date = updatedDate;
+
+          localStorage.setItem("newsList", JSON.stringify(newsList));
+          displayNews();
+        }
+      }
+
+      // Функция для поиска новостей по заголовку или описанию
+      function searchNews(searchText) {
+        var newsList = JSON.parse(localStorage.getItem("newsList")) || [];
+        var filteredNews = newsList.filter(function (news) {
+          var titleMatches = news.title.toLowerCase().includes(searchText);
+          var descriptionMatches = news.description
+            .toLowerCase()
+            .includes(searchText);
+          return titleMatches || descriptionMatches;
+        });
+        var newsContainer = document.querySelector(".news-list");
+        newsContainer.innerHTML = "";
+        filteredNews.forEach(function (news) {
+          var newsItem = document.createElement("li");
+          newsItem.className = "news-item";
+
+          var title = document.createElement("h4");
+          title.textContent = news.title;
+
+          var description = document.createElement("p");
+          description.textContent = news.description;
+
+          var date = document.createElement("p");
+          date.textContent = "Дата публикации: " + news.date;
+
+          newsItem.appendChild(title);
+          newsItem.appendChild(description);
+          newsItem.appendChild(date);
+
+          newsContainer.appendChild(newsItem);
+        });
+      }
+
+      // Функция для сортировки новостей по дате
+      function sortNewsByDate() {
+        var newsList = JSON.parse(localStorage.getItem("newsList")) || [];
+        newsList.sort(function (a, b) {
+          return new Date(b.date) - new Date(a.date);
+        });
+        localStorage.setItem("newsList", JSON.stringify(newsList));
+        displayNews();
+      }
+
+      document
+        .querySelector("#news-form")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+
+          var title = document.getElementById("title").value;
+          var description = document.getElementById("description").value;
+          var date = document.getElementById("date").value;
+
+          saveNews(title, description, date);
+          displayNews();
+
+          document.getElementById("title").value = "";
+          document.getElementById("description").value = "";
+          document.getElementById("date").value = "";
+        });
+
+      document.querySelector("#search").addEventListener("input", function () {
+        var searchText = document.getElementById("search").value.toLowerCase();
+        searchNews(searchText);
+      });
+
+      document
+        .querySelector("#sort-button")
+        .addEventListener("click", function () {
+          sortNewsByDate();
+        });
+
+      displayNews();
+    </script>
+  </body>
+</html>

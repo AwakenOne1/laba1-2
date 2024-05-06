@@ -1,0 +1,261 @@
+﻿<!DOCTYPE html>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<html>
+  <head>
+    <title>Информация о курсе</title>
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+    <style>
+      /* Стили для таблицы с информацией о курсе */
+      .detailed-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .detailed-table td {
+        padding: 10px;
+        border: 1px solid #ccc;
+      }
+
+      .detailed-image {
+        max-width: 200px;
+        max-height: 200px;
+        width: auto;
+        height: auto;
+        display: block;
+        margin: 0 auto;
+      }
+
+      .detailed-details {
+        vertical-align: top;
+        padding-left: 20px;
+      }
+
+      .detailed-title {
+        font-weight: bold;
+      }
+
+      .detailed-price {
+        text-align: right;
+      }
+
+      /* Стили для комментариев */
+      .comment {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-bottom: 10px;
+      }
+
+      .comment-user {
+        font-weight: bold;
+      }
+
+      .comment-rating {
+        color: gold;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <section class="top-nav">
+        <a href="index.html"
+          ><img class="logo" src="media/logo2.png" alt="Логотип" class="logo"
+        /></a>
+        <div>Образовательная платформа</div>
+        <input id="menu-toggle" type="checkbox" />
+        <label class="menu-button-container" for="menu-toggle">
+          <div class="menu-button"></div>
+        </label>
+        <ul class="menu">
+          <li><a href="index.html">Главная</a></li>
+          <li><a href="courses.html">Курсы</a></li>
+        </ul>
+      </section>
+    </header>
+
+    <main>
+      <section>
+        <h2>Подробное описание курса</h2>
+        <table class="detailed-table">
+          <tr>
+            <td rowspan="2">
+              <img
+                src="media/happyProgrammer.jpg"
+                alt="Изображение курса"
+                class="detailed-image"
+              />
+            </td>
+            <td class="detailed-details">
+              <div class="detailed-title">Курс 1</div>
+              <div>Описание курса 1</div>
+            </td>
+            <td class="detailed-price">$100</td>
+          </tr>
+          <tr>
+            <td colspan="2" class="detailed-details">
+              Дополнительная информация об этом курсе.
+            </td>
+          </tr>
+        </table>
+
+        <h3>Оставить отзыв</h3>
+        <div class="comment-form">
+          <form id="comment-form">
+            <label for="username">Ваше имя:</label>
+            <input type="text" name="username" id="username" required />
+            <br />
+            <label for="comment">Ваш отзыв:</label>
+            <textarea name="comment" id="comment" required></textarea>
+            <br />
+            <label for="rating">Оценка:</label>
+            <select name="rating" id="rating" required>
+              <option value="" disabled selected>Выберите оценку</option>
+              <option value="1">☆</option>
+              <option value="2">☆☆</option>
+              <option value="3">☆☆☆</option>
+              <option value="4">☆☆☆☆</option>
+              <option value="5">☆☆☆☆☆</option>
+
+              </select>
+                <br />
+                <input type="submit" value="Оставить отзыв" />
+              </form>
+            </div>
+        
+            <h3>Комментарии</h3>
+            <div id="comments"></div>
+          </section>
+        </main>
+        
+        <footer>
+          <p>&copy; 2024 Образовательная платформа. Все права защищены.</p>
+        </footer>
+        
+        <script>
+          // Получаем ссылки на элементы формы и контейнер для комментариев
+          const commentForm = document.getElementById('comment-form');
+          const commentsContainer = document.getElementById('comments');
+        
+          // Функция для создания элемента комментария
+          function createCommentElement(comment) {
+            const commentElement = document.createElement('div');
+            commentElement.classList.add('comment');
+        
+            const userElement = document.createElement('div');
+            userElement.classList.add('comment-user');
+            userElement.textContent = comment.username;
+        
+            const ratingElement = document.createElement('div');
+            ratingElement.classList.add('comment-rating');
+            ratingElement.textContent = '★'.repeat(comment.rating);
+        
+            const textElement = document.createElement('div');
+            textElement.textContent = comment.text;
+        
+            const editButton = document.createElement('button');
+            editButton.textContent = 'Редактировать';
+            editButton.addEventListener('click', () => editComment(comment));
+        
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Удалить';
+            deleteButton.addEventListener('click', () => deleteComment(comment));
+        
+            commentElement.appendChild(userElement);
+            commentElement.appendChild(ratingElement);
+            commentElement.appendChild(textElement);
+            commentElement.appendChild(editButton);
+            commentElement.appendChild(deleteButton);
+        
+            return commentElement;
+          }
+        
+          // Функция для добавления нового комментария
+          function addComment(event) {
+            event.preventDefault();
+        
+            const username = document.getElementById('username').value;
+            const comment = document.getElementById('comment').value;
+            const rating = document.getElementById('rating').value;
+        
+            const newComment = {
+              username,
+              text: comment,
+              rating: parseInt(rating),
+            };
+        
+            const comments = JSON.parse(localStorage.getItem('comments')) || [];
+            comments.push(newComment);
+            localStorage.setItem('comments', JSON.stringify(comments));
+        
+            const commentElement = createCommentElement(newComment);
+            commentsContainer.appendChild(commentElement);
+        
+            // Очистка формы после добавления комментария
+            document.getElementById('comment-form').reset();
+          }
+        
+          // Функция для редактирования комментария
+          function editComment(comment) {
+            const username = prompt('Введите новое имя пользователя', comment.username);
+            const text = prompt('Введите новый текст комментария', comment.text);
+            const rating = prompt('Введите новую оценку (от 1 до 5)', comment.rating);
+        
+            if (username && text && rating) {
+              const comments = JSON.parse(localStorage.getItem('comments')) || [];
+              const updatedComments = comments.map(c => {
+                if (c.username === comment.username && c.text === comment.text && c.rating === comment.rating) {
+                  return {
+                    username,
+                    text,
+                    rating: parseInt(rating),
+                  };
+                }
+                return c;
+              });
+              localStorage.setItem('comments', JSON.stringify(updatedComments));
+        
+              // Обновление отображения комментария на странице
+              const commentElements = commentsContainer.getElementsByClassName('comment');
+              Array.from(commentElements).forEach(commentElement => {
+                const userElement = commentElement.querySelector('.comment-user');
+                const ratingElement = commentElement.querySelector('.comment-rating');
+                const textElement = commentElement.querySelector('div:nth-child(3)');
+        
+                if (userElement.textContent === comment.username && textElement.textContent === comment.text && ratingElement.textContent === '★'.repeat(comment.rating)) {
+userElement.textContent = username;
+ratingElement.textContent = '★'.repeat(parseInt(rating));
+textElement.textContent = text;
+}
+});
+}
+}// Функция для удаления комментария
+function deleteComment(comment) {
+    if (confirm('Вы уверены, что хотите удалить этот комментарий?')) {
+      const comments = JSON.parse(localStorage.getItem('comments')) || [];
+      const updatedComments = comments.filter(c => !(c.username === comment.username && c.text === comment.text && c.rating === comment.rating));
+      localStorage.setItem('comments', JSON.stringify(updatedComments));
+
+      // Удаление комментария со страницы
+      const commentElement = Array.from(commentsContainer.getElementsByClassName('comment')).find(el => {
+        const userElement = el.querySelector('.comment-user');
+        const ratingElement = el.querySelector('.comment-rating');
+        const textElement = el.querySelector('div:nth-child(3)');
+
+        return userElement.textContent === comment.username && textElement.textContent === comment.text && ratingElement.textContent === '★'.repeat(comment.rating);
+      });
+      commentsContainer.removeChild(commentElement);
+    }
+  }
+
+  // Обработчик события для формы добавления комментария
+  commentForm.addEventListener('submit', addComment);
+
+  // Загрузка комментариев из localStorage при загрузке страницы
+  const comments = JSON.parse(localStorage.getItem('comments')) || [];
+  comments.forEach(comment => {
+    const commentElement = createCommentElement(comment);
+    commentsContainer.appendChild(commentElement);
+  });
+</script>
+</body>
+</html>
